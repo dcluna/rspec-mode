@@ -273,6 +273,11 @@ They execute after failures have been stored in `rspec-last-failed-specs'."
   :type 'hook
   :group 'rspec-mode)
 
+(defcustom rspec-reuse-compilation-buffers nil
+  "Reuses compilation buffers if set."
+  :type 'boolean
+  :group 'rspec-mode)
+
 ;;;###autoload
 (define-minor-mode rspec-mode
   "Minor mode for RSpec files
@@ -1029,10 +1034,11 @@ Looks at FactoryGirl::Syntax::Methods usage in spec_helper."
   "Determines the buffer name of the current rspec compilation"
   (let* ((candidates (rspec-compilation-buffer-name-candidates))
          (first-candidate (car candidates)))
-    (or (cl-find-if (lambda (buffer-name-candidate)
-                      (let ((process (get-buffer-process buffer-name-candidate)))
-                        (not (process-live-p process))))
-                    candidates)
+    (or (and (not rspec-reuse-compilation-buffers)
+             (cl-find-if (lambda (buffer-name-candidate)
+                           (let ((process (get-buffer-process buffer-name-candidate)))
+                             (not (process-live-p process))))
+                         candidates))
         first-candidate)))
 
 ;;;###autoload
